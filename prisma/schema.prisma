@@ -1,0 +1,62 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model clientes {
+  id                                             Int           @id @default(autoincrement())
+  nombres                                        String        @db.VarChar(50)
+  apellidos                                      String        @db.VarChar(50)
+  tipo_documento                                 String        @db.VarChar(2)
+  no_documento                                   String        @db.VarChar(20)
+  telefono                                       String        @db.VarChar(10)
+  email                                          String?       @unique @db.VarChar(10)
+  direccion_id                                   Int?
+  ciudad                                         String?       @db.VarChar(50)
+  direcciones_clientes_direccion_idTodirecciones direcciones?  @relation("clientes_direccion_idTodirecciones", fields: [direccion_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_direccionid")
+  direcciones_clientesTodirecciones_cliente_id   direcciones[] @relation("clientesTodirecciones_cliente_id")
+  ventas                                         ventas[]
+}
+
+model contratos {
+  id     Int      @id @default(autoincrement())
+  nombre String   @db.VarChar(30)
+  ventas ventas[]
+}
+
+model direcciones {
+  id                                          Int        @id @default(autoincrement())
+  detalle                                     String     @db.VarChar(100)
+  cliente_id                                  Int?
+  clientes_clientesTodirecciones_cliente_id   clientes?  @relation("clientesTodirecciones_cliente_id", fields: [cliente_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_clienteid")
+  clientes_clientes_direccion_idTodirecciones clientes[] @relation("clientes_direccion_idTodirecciones")
+}
+
+model vehiculos {
+  id            Int      @id @default(autoincrement())
+  marca         String   @db.VarChar(50)
+  modelo        String   @db.VarChar(50)
+  linea         String   @db.VarChar(50)
+  placa         String?  @unique @db.VarChar(6)
+  color         String   @db.VarChar(10)
+  servicio      String   @db.VarChar(20)
+  precio_compra String   @db.VarChar(100)
+  kilometraje   String?  @db.VarChar(50)
+  ventas        ventas[]
+}
+
+model ventas {
+  id          Int        @id @default(autoincrement())
+  cliente_id  Int?
+  vehiculo_id Int?
+  contrato_id Int?
+  precio      Decimal?   @db.Money
+  fecha_venta DateTime?  @db.Date
+  clientes    clientes?  @relation(fields: [cliente_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_clienteid")
+  contratos   contratos? @relation(fields: [contrato_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_contratoid")
+  vehiculos   vehiculos? @relation(fields: [vehiculo_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_vehiculoid")
+}
